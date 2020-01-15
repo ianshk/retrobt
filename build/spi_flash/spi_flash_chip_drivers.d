@@ -1,0 +1,36 @@
+spi_flash_chip_drivers.o: \
+ /Users/brew/esp/esp-idf/components/spi_flash/spi_flash_chip_drivers.c \
+ /Users/brew/esp/esp-idf/components/spi_flash/include/spi_flash_chip_driver.h \
+ /Users/brew/esp/esp-idf/components/spi_flash/include/esp_flash.h \
+ /Users/brew/esp/esp-idf/components/esp_common/include/esp_err.h \
+ /Users/brew/esp/esp-idf/components/newlib/platform_include/assert.h \
+ /Users/brew/esp/retrobt/build/include/sdkconfig.h \
+ /Users/brew/esp/esp-idf/components/soc/include/hal/spi_flash_types.h \
+ /Users/brew/esp/esp-idf/components/esp_common/include/esp_types.h \
+ /Users/brew/esp/esp-idf/components/soc/include/hal/esp_flash_err.h \
+ /Users/brew/esp/esp-idf/components/spi_flash/include/spi_flash_chip_generic.h \
+ /Users/brew/esp/esp-idf/components/spi_flash/include/spi_flash_chip_issi.h \
+ /Users/brew/esp/esp-idf/components/spi_flash/include/spi_flash_chip_gd.h
+
+/Users/brew/esp/esp-idf/components/spi_flash/include/spi_flash_chip_driver.h:
+
+/Users/brew/esp/esp-idf/components/spi_flash/include/esp_flash.h:
+
+/Users/brew/esp/esp-idf/components/esp_common/include/esp_err.h:
+
+/Users/brew/esp/esp-idf/components/newlib/platform_include/assert.h:
+
+/Users/brew/esp/retrobt/build/include/sdkconfig.h:
+
+/Users/brew/esp/esp-idf/components/soc/include/hal/spi_flash_types.h:
+
+/Users/brew/esp/esp-idf/components/esp_common/include/esp_types.h:
+
+/Users/brew/esp/esp-idf/components/soc/include/hal/esp_flash_err.h:
+
+/Users/brew/esp/esp-idf/components/spi_flash/include/spi_flash_chip_generic.h:
+
+/Users/brew/esp/esp-idf/components/spi_flash/include/spi_flash_chip_issi.h:
+
+/Users/brew/esp/esp-idf/components/spi_flash/include/spi_flash_chip_gd.h:
+/Users/brew/esp/esp-idf/components/spi_flash/./spi_flash_chip_drivers.c:
