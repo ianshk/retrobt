@@ -8,3 +8,9 @@
 #
 CFLAGS += -Wno-format
 
+COMPONENT_EXTRA_INCLUDES +=     $(IDF_PATH)/components/bt/common/include/                     \
+                                $(IDF_PATH)/components/bt/host/bluedroid/common/include/      \
+                                $(IDF_PATH)/components/bt/host/bluedroid/stack/include        \
+                                $(IDF_PATH)/components/bt/host/bluedroid/stack/gap/include    \
+                                $(IDF_PATH)/components/bt/host/bluedroid/osi/include
+

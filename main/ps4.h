@@ -4,6 +4,16 @@
 #define PS4_REPORT_BUFFER_SIZE 77
 #define PS4_HID_BUFFER_SIZE    50
 
+#define PS4_TAG "PS4_SPP"
+
+// typedef struct {
+//     uint16_t          event;
+//     uint16_t          len;
+//     uint16_t          offset;
+//     uint16_t          layer_specific;
+//     uint8_t           data[];
+// } BT_HDR;
+
 // Output
 enum hid_cmd_code {
     hid_cmd_code_set_report   = 0x50,
@@ -34,8 +44,6 @@ enum ps4_control_packet_index {
     ps4_control_packet_index_flash_on_time = 10,
     ps4_control_packet_index_flash_off_time = 11
 };
-
-
 
 // Analog sticks
 typedef struct {
@@ -134,5 +142,9 @@ typedef struct {
     ps4_status_t status;
     ps4_sensor_t sensor;
 } ps4_t;
+
+
+void ps4_set_led(uint8_t r, uint8_t g, uint8_t b, uint16_t channel);
+void ps4_enable(uint16_t channel);
 
 #endif

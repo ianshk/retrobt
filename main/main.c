@@ -38,7 +38,7 @@ static btstack_packet_callback_registration_t hci_event_callback_registration;
 static btstack_packet_callback_registration_t l2cap_control_packet_callback_registration;
 static btstack_packet_callback_registration_t l2cap_interrupt_packet_callback_registration;
 
-static const uint8_t hid_cmd_payload_ps4_enable[] = { 0x43, 0x02 };
+//static const uint8_t hid_cmd_payload_ps4_enable[] = { 0x43, 0x02 };
 
 typedef struct {
     uint16_t          event;
@@ -50,34 +50,33 @@ typedef struct {
 
 static uint8_t sixaxis_init_state=0;
 
-//#define BT_DEFAULT_BUFFER_SIZE          (4096 + 16)
-//#define BT_DEFAULT_BUFFER_SIZE          79
-//#define L2CAP_MIN_OFFSET    13     /* plus control(2), SDU length(2) */
+static uint8_t send_state = 0;
+
 
 // old 48
 #define OUTPUT_REPORT_BUFFER_SIZE   77
 #define HID_BUFFERSIZE              50
 
-const unsigned char report_buffer[] = {
-    0x80, 0x00, 0xff, 0x00, 0x00,
-    0x00, 0x00, 0x20, 0x20, 0x40,
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00 
-};
+// const unsigned char report_buffer[] = {
+//     0x80, 0x00, 0xff, 0x00, 0x00,
+//     0x00, 0x00, 0x20, 0x20, 0x40,
+//     0x00, 0x00, 0x00, 0x00, 0x00,
+//     0x00, 0x00, 0x00, 0x00, 0x00,
+//     0x00, 0x00, 0x00, 0x00, 0x00,
+//     0x00, 0x00, 0x00, 0x00, 0x00,
+//     0x00, 0x00, 0x00, 0x00, 0x00,
+//     0x00, 0x00, 0x00, 0x00, 0x00,
+//     0x00, 0x00, 0x00, 0x00, 0x00,
+//     0x00, 0x00, 0x00, 0x00, 0x00,
+//     0x00, 0x00, 0x00, 0x00, 0x00,
+//     0x00, 0x00, 0x00, 0x00, 0x00,
+//     0x00, 0x00, 0x00, 0x00, 0x00,
+//     0x00, 0x00, 0x00, 0x00, 0x00,
+//     0x00, 0x00, 0x00, 0x00, 0x00,
+//     0x00, 0x00 
+// };
 
-char lineBuffer[79];
+// char lineBuffer[77];
 
 
 
@@ -85,118 +84,6 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
 static void handle_sdp_client_query_result(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
 
 #define PS4_TAG "PS4_SPP"
-
-void print_hid_cmd(hid_cmd_t *hid_cmd, uint8_t len)
-{
-//       uint8_t code;
-//   uint8_t identifier;
-//   uint8_t data[PS4_REPORT_BUFFER_SIZE];
-    printf("len %d\n", len);
-    printf("code: 0x%02x\n",hid_cmd->code);
-    printf("identifier: 0x%02x\n", hid_cmd->identifier);
-    
-
-    for (int i = 0;i < PS4_REPORT_BUFFER_SIZE; i++)
-    {
-        printf("%02x ",hid_cmd->data[i]);
-    }
-    printf("\n");
-}
-
-void ps4_gap_send_hid( hid_cmd_t *hid_cmd, uint16_t channel, uint8_t len )
-{
-    print_hid_cmd(hid_cmd, len);
-    memcpy(lineBuffer+2,report_buffer,OUTPUT_REPORT_BUFFER_SIZE);
-    lineBuffer[0] = hid_cmd->code; //0x52;// HID BT Set_report (0x50) | Report Type (Output 0x02)
-    lineBuffer[1] = hid_cmd->identifier; //0x01;// Report ID
-   //lineBuffer[11] |= (uint8_t)(((uint16_t)led & 0x0f) << 1);    
-
-    l2cap_send(channel,(uint8_t*)lineBuffer,HID_BUFFERSIZE);
-//     uint8_t result;
-//     BT_HDR     *p_buf;
-
-//     p_buf = (BT_HDR *)osi_malloc(BT_DEFAULT_BUFFER_SIZE);
-
-//     if( !p_buf ){
-//         ESP_LOGE(PS4_TAG, "[%s] allocating buffer for sending the command failed", __func__);
-//     }
-
-//     p_buf->len = len + ( sizeof(*hid_cmd) - sizeof(hid_cmd->data) );
-//     p_buf->offset = L2CAP_MIN_OFFSET;
-
-//     memcpy ((uint8_t *)(p_buf + 1) + p_buf->offset, (uint8_t*)hid_cmd, p_buf->len);
-
-//    //  result = GAP_ConnBTWrite(gap_handle_hidc, p_buf);
-//     l2cap_send(channel,p_buf->data,p_buf->len);
-
-//     if (result == BT_PASS) {
-//         ESP_LOGI(PS4_TAG, "[%s] sending command: success\n", __func__);
-//         //printf("[%s] sending command: success", __func__);
-//     }
-//     else {
-//         ESP_LOGE(PS4_TAG, "[%s] sending command: failed\n", __func__);
-//         //printf("[%s] sending command: success", __func__);
-//     }
-}
-
-void ps4Cmd( ps4_cmd_t cmd, uint16_t channel )
-{
-    hid_cmd_t hid_cmd = { .data = {0x80, 0x00, 0xFF} };
-    uint16_t len = sizeof(hid_cmd.data);
-
-    hid_cmd.code = hid_cmd_code_set_report | hid_cmd_code_type_output;
-    hid_cmd.identifier = hid_cmd_identifier_ps4_control;
-
-    hid_cmd.data[ps4_control_packet_index_small_rumble] = cmd.smallRumble; // Small Rumble
-    hid_cmd.data[ps4_control_packet_index_large_rumble] = cmd.largeRumble; // Big rumble
-
-    hid_cmd.data[ps4_control_packet_index_red] = cmd.r; // Red
-    hid_cmd.data[ps4_control_packet_index_green] = cmd.g; // Green
-    hid_cmd.data[ps4_control_packet_index_blue] = cmd.b; // Blue
-
-    hid_cmd.data[ps4_control_packet_index_flash_on_time] = cmd.flashOn; // Time to flash bright (255 = 2.5 seconds)
-    hid_cmd.data[ps4_control_packet_index_flash_off_time] = cmd.flashOff; // Time to flash dark (255 = 2.5 seconds)
-
-    ps4_gap_send_hid( &hid_cmd, channel, len );
-}
-
-void ps4SetLed(uint8_t r, uint8_t g, uint8_t b, uint16_t channel)
-{
-    printf("ps4 set led\n");
-
-    ps4_cmd_t cmd = { 0 };
-
-    cmd.r = r;
-    cmd.g = g;
-    cmd.b = b;
-
-    ps4Cmd(cmd, channel);
-}
-
-void ps4Enable(uint16_t channel)
-{
-    uint16_t len = sizeof(hid_cmd_payload_ps4_enable);
-    hid_cmd_t hid_cmd;
-
-    hid_cmd.code = hid_cmd_code_set_report | hid_cmd_code_type_feature;
-    hid_cmd.identifier = hid_cmd_identifier_ps4_enable;
-
-    memcpy( hid_cmd.data, hid_cmd_payload_ps4_enable, len);
-
-    ps4_gap_send_hid( &hid_cmd, channel, len );
-    ps4SetLed(32, 32, 64, channel);
-}
-
-
-static int set_sixaxis_led(uint16_t channel,int led)
-{
-   memcpy(lineBuffer+2,report_buffer,OUTPUT_REPORT_BUFFER_SIZE);
-    lineBuffer[0] = 0x52;// HID BT Set_report (0x50) | Report Type (Output 0x02)
-    lineBuffer[1] = 0x11;// Report ID
-   //lineBuffer[11] |= (uint8_t)(((uint16_t)led & 0x0f) << 1);    
-
-   return l2cap_send(channel,(uint8_t*)lineBuffer,HID_BUFFERSIZE);
-}
 
 
 static void handle_sdp_client_query_result(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
@@ -409,8 +296,10 @@ static void l2cap_interrupt_packet_handler(uint8_t packet_type, uint16_t channel
             break;
          }        break;
         case L2CAP_EVENT_CAN_SEND_NOW:
-           // printf("can send now - interrutp\n");
-            ps4SetLed(32, 32, 64, channel);
+           printf("can send now - interrutp\n");
+            ps4_set_led(32, 32, 64, channel);
+           //ps4_enable(channel);
+           
             break;
       default:
        //  printf("control l2cap:unknown(%02x)\n",packet[0]);
@@ -499,11 +388,22 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
     }
 }
 
+void vTaskCode( void * pvParameters )
+{
+ for( ;; )
+ {
+     // Task code goes here.
+     printf("send code\n");
+ }
+}
+
 int btstack_main(int argc, const char * argv[]);
 int btstack_main(int argc, const char * argv[]){
 
     (void)argc;
     (void)argv;
+
+    xTaskCreate(vTaskCode, "TaskCode", 2048, NULL, 1, NULL);
 
     // Initialize L2CAP 
     printf("--------- Starting -----------\n");
