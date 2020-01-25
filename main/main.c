@@ -11,6 +11,7 @@
 #include "esp_log.h"
 #include "osi/allocator.h"
 #include "ps4.h"
+#include "main.h"
 
 
 //#define MAX_ATTRIBUTE_VALUE_SIZE 300
@@ -52,6 +53,12 @@ static uint8_t sixaxis_init_state=0;
 
 static uint8_t send_state = 0;
 
+static uint16_t control_channel = 0;
+static int can_send_control = 0;
+
+static uint16_t interrupt_channel = 0;
+static int can_send_interrupt = 0;
+
 
 // old 48
 #define OUTPUT_REPORT_BUFFER_SIZE   77
@@ -84,6 +91,53 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
 static void handle_sdp_client_query_result(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
 
 #define PS4_TAG "PS4_SPP"
+
+
+uint16_t request_send_control()
+{
+    if (control_channel > 0)
+    {
+        l2cap_request_can_send_now_event(control_channel);
+        return control_channel;
+    }
+    return 0;
+}
+
+int poll_send_control()
+{
+    if (can_send_control == 1)
+        return 1;
+
+    return 0;
+}
+
+void reset_send_control()
+{
+    can_send_control = 0;
+}
+
+uint16_t request_send_interrupt()
+{
+    if (interrupt_channel > 0)
+    {
+        l2cap_request_can_send_now_event(interrupt_channel);
+        return interrupt_channel;
+    }
+    return 0;
+}
+
+int poll_send_interrupt()
+{
+    if (can_send_interrupt == 1)
+        return 1;
+
+    return 0;
+}
+
+void reset_send_interrupt()
+{
+    can_send_interrupt = 0;
+}
 
 
 static void handle_sdp_client_query_result(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
@@ -217,17 +271,11 @@ static void l2cap_control_packet_handler(uint8_t packet_type, uint16_t channel, 
                 printf("Connecting to HID Control failed: 0x%02x\n", status);
                 break;
             }
-            printf("control - created interrupt channel\n");
-                                
-        
-       //  ps4Enable(channel);
-       //  sixaxis_interrupt_channel_id=channel;
+            control_channel = channel;
+            
          break;
       case L2CAP_EVENT_CHANNEL_CLOSED:
-         printf("L2CAP_CHANNEL_CLOSED\n");
-         //sixaxis_control_channel_id=0;
-         sixaxis_init_state=0;
-         //init_button_state();
+            control_channel = 0;
          break;
       case DAEMON_EVENT_L2CAP_CREDITS:
       printf("-----daemon state\n");
@@ -244,6 +292,7 @@ static void l2cap_control_packet_handler(uint8_t packet_type, uint16_t channel, 
          break;
         case L2CAP_EVENT_CAN_SEND_NOW:
             printf("can send now - control\n");
+            can_send_control = 1;
             break;
       default:
        //  printf("control l2cap:unknown(%02x)\n",packet[0]);
@@ -272,17 +321,13 @@ static void l2cap_interrupt_packet_handler(uint8_t packet_type, uint16_t channel
             printf("L2CAP Connection failed: 0x%02x\n", status);
             break;
         }
-
-            printf("interrupt - HID Connection established\n");
-        
-         l2cap_request_can_send_now_event(channel);
-       //  sixaxis_interrupt_channel_id=channel;
-         break;
+        interrupt_channel = channel;
+        ps4_enable(channel);
+        break;
       case L2CAP_EVENT_CHANNEL_CLOSED:
          printf("L2CAP_CHANNEL_CLOSED\n");
-         //sixaxis_interrupt_channel_id=0;
-         sixaxis_init_state=0;
-         //init_button_state();
+         interrupt_channel = channel;
+         sixaxis_init_state = 0;
          break;
       case DAEMON_EVENT_L2CAP_CREDITS:
         printf("daemon interrupt\n");
@@ -296,10 +341,8 @@ static void l2cap_interrupt_packet_handler(uint8_t packet_type, uint16_t channel
             break;
          }        break;
         case L2CAP_EVENT_CAN_SEND_NOW:
-           printf("can send now - interrutp\n");
-            ps4_set_led(32, 32, 64, channel);
-           //ps4_enable(channel);
-           
+            printf("can send now - interrupt\n");
+            can_send_interrupt = 1;
             break;
       default:
        //  printf("control l2cap:unknown(%02x)\n",packet[0]);
@@ -403,7 +446,7 @@ int btstack_main(int argc, const char * argv[]){
     (void)argc;
     (void)argv;
 
-    xTaskCreate(vTaskCode, "TaskCode", 2048, NULL, 1, NULL);
+   // xTaskCreate(vTaskCode, "TaskCode", 2048, NULL, 1, NULL);
 
     // Initialize L2CAP 
     printf("--------- Starting -----------\n");

@@ -8,6 +8,7 @@
 #include "osi/allocator.h"
 #include "stack/gap_api.h"
 #include "ps4.h"
+#include "main.h"
 
 static const uint8_t hid_cmd_payload_ps4_enable[] = { 0x43, 0x02 };
 
@@ -90,7 +91,25 @@ void ps4_set_led(uint8_t r, uint8_t g, uint8_t b, uint16_t channel)
     cmd.g = g;
     cmd.b = b;
 
-    ps4_command(cmd, channel);
+    int ret = request_send_interrupt();
+    int poll_status = 0;
+
+    if (ret)
+    {
+        while(poll_status == 0)
+        {
+            poll_status = poll_send_interrupt();
+            if (poll_status)
+            {
+                ps4_command(cmd, channel);
+                reset_send_interrupt();
+                printf("----PS4 set LED sent\n");
+                break;
+            }
+        }
+    }
+
+   // ps4_command(cmd, channel);
 }
 
 void ps4_enable(uint16_t channel)
@@ -103,6 +122,28 @@ void ps4_enable(uint16_t channel)
 
     memcpy( hid_cmd.data, hid_cmd_payload_ps4_enable, len);
 
-    ps4_gap_send_hid(&hid_cmd, channel, len);
-    ps4_set_led(32, 32, 64, channel);
+    //ps4_gap_send_hid(&hid_cmd, channel, len);
+
+    int ret = request_send_interrupt();
+   // int poll_status = 0;
+
+    printf("RET ---- %d\n", ret);
+
+    // if (ret)
+    // {
+    //     while(poll_status == 0)
+    //     {
+    //         poll_status = poll_send_interrupt();
+    //         printf("poll statud %d",poll_status);
+    //         if (poll_status)
+    //         {
+    //             ps4_gap_send_hid(&hid_cmd, channel, len);
+    //             reset_send_interrupt();
+    //             printf("----PS4 enable sent\n");
+    //             break;
+    //         }
+    //     }
+    // }
+
+    //ps4_set_led(32, 32, 64, channel);
 }

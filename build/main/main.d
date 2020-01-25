@@ -177,7 +177,7 @@ main.o: /Users/brew/esp/retrobt/main/main.c \
  /Users/brew/esp/esp-idf/components/log/include/esp_log.h \
  /Users/brew/esp/esp-idf/components/log/include/esp_log_internal.h \
  /Users/brew/esp/esp-idf/components/bt/common/osi/include/osi/allocator.h \
- /Users/brew/esp/retrobt/main/ps4.h
+ /Users/brew/esp/retrobt/main/ps4.h /Users/brew/esp/retrobt/main/main.h
 
 /Users/brew/esp/esp-idf/components/btstack/include/btstack_config.h:
 
@@ -536,4 +536,6 @@ main.o: /Users/brew/esp/retrobt/main/main.c \
 /Users/brew/esp/esp-idf/components/bt/common/osi/include/osi/allocator.h:
 
 /Users/brew/esp/retrobt/main/ps4.h:
+
+/Users/brew/esp/retrobt/main/main.h:
 /Users/brew/esp/retrobt/main/./main.c:
